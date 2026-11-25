@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Five-Language Flavor Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=Noto+Sans+JP:wght@400;500;700&family=Noto+Sans+KR:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* Layout idea: a counter reference. Sticky language + search on top, flavor rows below,
+   one tap opens a row into all five languages. Fruit-family dots are the only saturated color. */
+:root {
+  --ground: #EEF3F3;
+  --surface: #FFFFFF;
+  --ink: #0F1E24;
+  --ink-2: #4B6068;
+  --line: #C9D5D8;
+  --accent: #0E4F80;
+  --accent-ink: #FFFFFF;
+  --tint: rgba(15, 30, 36, 0.045);
+
+  --c-st: #D6334A;
+  --c-bl: #3F5BB5;
+  --c-me: #2BA36B;
+  --c-or: #A9B91F;
+  --c-tr: #F2A413;
+  --c-ci: #F26B21;
+  --c-cr: #B58B5A;
+  --c-ca: #E85DA0;
+  --c-gr: #8A3FB0;
+  --c-mi: #3CC4BA;
+
+  --f-main: "Archivo", "Noto Sans JP", "Noto Sans KR", "Noto Sans SC", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --gutter: clamp(16px, 4vw, 40px);
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ground: #0D171C;
+    --surface: #152228;
+    --ink: #E7EFF1;
+    --ink-2: #9FB2B8;
+    --line: #2A3B42;
+    --accent: #5DB2E6;
+    --accent-ink: #06202F;
+    --tint: rgba(231, 239, 241, 0.06);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --ground: #0D171C;
+  --surface: #152228;
+  --ink: #E7EFF1;
+  --ink-2: #9FB2B8;
+  --line: #2A3B42;
+  --accent: #5DB2E6;
+  --accent-ink: #06202F;
+  --tint: rgba(231, 239, 241, 0.06);
+  color-scheme: dark;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--ink);
+  font-family: var(--f-main);
+  font-size: 1rem;
+  line-height: 1.5;
+  caret-color: var(--accent);
+  scrollbar-color: var(--line) transparent;
+  scrollbar-width: thin;
+}
+::selection { background: var(--accent); color: var(--accent-ink); }
+[lang="ja"] { font-family: "Noto Sans JP", var(--f-main); line-height: 1.65; }
+[lang="ko"] { font-family: "Noto Sans KR", var(--f-main); line-height: 1.65; }
+[lang="zh-Hans"] { font-family: "Noto Sans SC", var(--f-main); line-height: 1.65; }
+
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.sr-only {
+  position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+.wrap { max-width: 1080px; margin: 0 auto; padding-inline: var(--gutter); }
+
+/* ---------- Title ---------- */
+.top { padding-top: 28px; padding-bottom: 8px; display: flex; align-items: baseline; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+h1 {
+  margin: 0;
+  font-size: clamp(2rem, 1.2rem + 3.4vw, 3.5rem);
+  line-height: 1.05;
+  font-weight: 850;
+  font-stretch: 118%;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+.count { margin: 0; color: var(--ink-2); font-size: 1rem; font-variant-numeric: tabular-nums; }
+.hint { margin: 4px 0 0; color: var(--ink-2); font-size: 1rem; max-width: 62ch; padding-bottom: 16px; }
+
+/* ---------- Sticky controls ---------- */
+.controls {
+  position: sticky; top: 0; z-index: 5;
+  background: var(--ground);
+  border-bottom: 1px solid var(--line);
+  padding-block: 12px;
+}
+.controls .wrap { display: grid; gap: 10px; }
+
+.langs { margin: 0; padding: 3px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px; }
+.seg { position: relative; display: block; min-width: 0; }
+.seg input { position: absolute; inset: 0; opacity: 0; margin: 0; cursor: pointer; }
+.seg span {
+  display: flex; align-items: center; justify-content: center;
+  min-height: 44px; padding: 0 4px; border-radius: 9px;
+  font-weight: 600; font-size: 0.9rem; text-align: center; white-space: nowrap;
+  color: var(--ink);
+  transition: background-color 140ms ease-out, color 140ms ease-out;
+}
+.seg:hover span { background: var(--tint); }
+.seg input:checked + span { background: var(--accent); color: var(--accent-ink); }
+.seg input:focus-visible + span { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+.search { position: relative; display: block; }
+.search svg.mag { position: absolute; left: 14px; top: 50%; translate: 0 -50%; width: 20px; height: 20px; color: var(--ink-2); pointer-events: none; }
+.search input {
+  width: 100%; min-height: 48px; padding: 0 48px 0 44px;
+  font: inherit; font-size: 1rem; color: var(--ink);
+  background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
+  -webkit-appearance: none; appearance: none;
+}
+.search input::placeholder { color: var(--ink-2); opacity: 1; }
+.search input::-webkit-search-cancel-button { display: none; }
+.search input:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; border-color: var(--accent); }
+.clear {
+  position: absolute; right: 2px; top: 50%; translate: 0 -50%;
+  width: 44px; height: 44px; display: grid; place-items: center;
+  border: 0; background: transparent; color: var(--ink-2); border-radius: 10px; cursor: pointer;
+}
+.clear[hidden] { display: none; }
+.clear:hover { background: var(--tint); color: var(--ink); }
+.clear svg { width: 18px; height: 18px; }
+
+/* ---------- Filter chips ---------- */
+.chips-row { padding-block: 14px 6px; }
+.chips {
+  display: flex; gap: 8px; overflow-x: auto; margin: 0 calc(-1 * var(--gutter)); padding: 4px var(--gutter);
+  scroll-snap-type: x proximity; scrollbar-width: none;
+}
+.chips::-webkit-scrollbar { display: none; }
+.chip {
+  flex: none; scroll-snap-align: start;
+  display: inline-flex; align-items: center; gap: 8px;
+  min-height: 44px; padding: 0 16px; border-radius: 999px;
+  font: inherit; font-size: 0.9375rem; font-weight: 600; color: var(--ink);
+  background: var(--surface); border: 1px solid var(--line); cursor: pointer;
+  transition: background-color 140ms ease-out, color 140ms ease-out, border-color 140ms ease-out;
+}
+.chip:hover { border-color: var(--ink-2); }
+.chip:active { background: var(--tint); }
+.chip[aria-pressed="true"] { background: var(--ink); color: var(--ground); border-color: var(--ink); }
+.dot { width: 10px; height: 10px; border-radius: 50%; background: var(--dot, var(--ink-2)); flex: none; }
+@media (min-width: 860px) {
+  .chips { flex-wrap: wrap; overflow: visible; margin: 0; padding: 4px 0; }
+}
+
+/* ---------- Flavor list ---------- */
+.list { list-style: none; margin: 0; padding: 0 0 64px; }
+@media (min-width: 860px) {
+  .list { display: grid; grid-template-columns: 1fr 1fr; column-gap: 48px; align-items: start; }
+  .list > li.is-open { grid-column: 1 / -1; }
+}
+.flavor { border-bottom: 1px solid var(--line); }
+.row {
+  width: 100%; display: grid; grid-template-columns: 14px 1fr 24px; gap: 16px; align-items: start;
+  padding: 18px 8px; margin: 0; text-align: left;
+  font: inherit; color: inherit; background: transparent; border: 0; cursor: pointer;
+  border-radius: 6px;
+}
+.row:hover { background: var(--tint); }
+.row:active { background: var(--tint); }
+.dots { display: flex; flex-direction: column; gap: 5px; padding-top: 9px; }
+.txt { display: grid; gap: 4px; min-width: 0; }
+.name {
+  font-size: clamp(1.3rem, 1.05rem + 1vw, 1.65rem);
+  line-height: 1.15; font-weight: 800; font-stretch: 114%; letter-spacing: -0.01em;
+  overflow-wrap: anywhere;
+}
+.desc { font-size: 1.0625rem; overflow-wrap: anywhere; }
+.alt { font-size: 0.9375rem; color: var(--ink-2); overflow-wrap: anywhere; }
+.chev { width: 22px; height: 22px; margin-top: 4px; color: var(--ink-2); transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1); }
+.is-open .chev { transform: rotate(180deg); }
+
+.swap { animation: swap 240ms cubic-bezier(0.16, 1, 0.3, 1); }
+@keyframes swap { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: none; } }
+
+.panel { padding: 4px 8px 22px 38px; animation: open 220ms cubic-bezier(0.16, 1, 0.3, 1); }
+.panel[hidden] { display: none; }
+@keyframes open { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+.panel dl { margin: 0; display: grid; gap: 12px; }
+.panel dl > div { display: grid; grid-template-columns: 84px 1fr; gap: 12px; align-items: baseline; }
+.panel dt { color: var(--ink-2); font-size: 0.9375rem; font-weight: 600; }
+.panel dd { margin: 0; font-size: 1.0625rem; overflow-wrap: anywhere; }
+.panel .tags { margin: 16px 0 0; display: flex; flex-wrap: wrap; gap: 6px 18px; color: var(--ink-2); font-size: 0.9375rem; }
+.panel .tags span { display: inline-flex; align-items: center; gap: 8px; }
+@media (max-width: 420px) {
+  .panel { padding-left: 8px; }
+  .panel dl > div { grid-template-columns: 1fr; gap: 2px; }
+}
+
+/* ---------- Empty ---------- */
+.empty { padding: 40px 8px 64px; display: grid; gap: 14px; justify-items: start; }
+.empty[hidden] { display: none; }
+.empty p { margin: 0; font-size: 1.25rem; font-weight: 700; }
+.btn {
+  min-height: 48px; padding: 0 20px; border-radius: 12px; border: 0; cursor: pointer;
+  font: inherit; font-weight: 700; color: var(--accent-ink); background: var(--accent);
+  transition: filter 140ms ease-out;
+}
+.btn:hover { filter: brightness(1.1); }
+.btn:active { filter: brightness(0.92); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+</style>
+</head>
+<body>
+
+<header class="wrap top">
+  <h1 id="title">Flavor guide</h1>
+  <p class="count" id="count" aria-live="polite"></p>
+</header>
+<div class="wrap"><p class="hint" id="hint"></p></div>
+
+<div class="controls">
+  <div class="wrap">
+    <fieldset class="langs" id="langs">
+      <legend class="sr-only">Language</legend>
+    </fieldset>
+    <label class="search">
+      <span class="sr-only" id="search-label">Search flavors</span>
+      <svg class="mag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>
+      <input id="q" type="search" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search">
+      <button type="button" class="clear" id="clear" hidden aria-label="Clear search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </label>
+  </div>
+</div>
+
+<main class="wrap">
+  <div class="chips-row"><div class="chips" id="chips" role="group" aria-label="Filter by fruit"></div></div>
+  <ul class="list" id="list"></ul>
+  <div class="empty" id="empty" hidden>
+    <p id="empty-msg"></p>
+    <button type="button" class="btn" id="empty-btn"></button>
+  </div>
+</main>
+
+<script>
+(function () {
+  var LANGS = [
+    { id: "en", label: "English", lang: "en" },
+    { id: "ja", label: "日本語", lang: "ja" },
+    { id: "ko", label: "한국어", lang: "ko" },
+    { id: "tl", label: "Tagalog", lang: "tl" },
+    { id: "zh", label: "中文", lang: "zh-Hans" }
+  ];
+  var LA = { en: "en", ja: "ja", ko: "ko", tl: "tl", zh: "zh-Hans" };
+
+  var UI = {
+    title:  { en: "Flavor guide", ja: "フレーバーガイド", ko: "맛 가이드", tl: "Gabay sa mga lasa", zh: "口味指南" },
+    search: { en: "Search flavors", ja: "フレーバーを検索", ko: "맛 검색", tl: "Maghanap ng lasa", zh: "搜索口味" },
+    clear:  { en: "Clear search", ja: "検索をクリア", ko: "검색 지우기", tl: "I-clear ang search", zh: "清除搜索" },
+    all:    { en: "All", ja: "すべて", ko: "전체", tl: "Lahat", zh: "全部" },
+    hint:   { en: "Tap a flavor to see it in all five languages.", ja: "フレーバーをタップすると、5つの言語で表示されます。", ko: "맛을 누르면 5개 언어로 볼 수 있습니다.", tl: "I-tap ang lasa para makita ito sa limang wika.", zh: "点按口味,即可查看五种语言。" },
+    none:   { en: "No flavors match.", ja: "該当するフレーバーがありません。", ko: "일치하는 맛이 없습니다.", tl: "Walang tugmang lasa.", zh: "没有匹配的口味。" },
+    reset:  { en: "Clear search and filter", ja: "検索と絞り込みを解除", ko: "검색 및 필터 해제", tl: "I-clear ang search at filter", zh: "清除搜索和筛选" },
+    group:  { en: "Filter by fruit", ja: "フルーツで絞り込み", ko: "과일로 필터", tl: "I-filter ayon sa prutas", zh: "按水果筛选" },
+    count: function (l, s, t) {
+      var all = s === t;
+      if (l === "ja") return all ? t + "種類" : s + " / " + t + "種類";
+      if (l === "ko") return all ? t + "가지" : s + " / " + t + "가지";
+      if (l === "tl") return all ? t + " na lasa" : s + " sa " + t + " na lasa";
+      if (l === "zh") return all ? t + "种口味" : s + " / " + t + "种口味";
+      return all ? t + " flavors" : s + " of " + t + " flavors";
+    }
+  };
+
+  var TAGS = [
+    { id: "st", l: { en: "Strawberry", ja: "いちご", ko: "딸기", tl: "Strawberry", zh: "草莓" } },
+    { id: "bl", l: { en: "Berry", ja: "ベリー", ko: "베리", tl: "Berries", zh: "莓果" } },
+    { id: "me", l: { en: "Watermelon and melon", ja: "スイカ・メロン", ko: "수박·멜론", tl: "Pakwan at melon", zh: "西瓜·蜜瓜" } },
+    { id: "tr", l: { en: "Tropical", ja: "トロピカル", ko: "트로피컬", tl: "Tropikal", zh: "热带水果" } },
+    { id: "or", l: { en: "Apple and peach", ja: "りんご・桃", ko: "사과·복숭아", tl: "Mansanas at peach", zh: "苹果·桃子" } },
+    { id: "gr", l: { en: "Grape", ja: "ぶどう", ko: "포도", tl: "Ubas", zh: "葡萄" } },
+    { id: "ci", l: { en: "Citrus and lemonade", ja: "柑橘・レモネード", ko: "감귤·레모네이드", tl: "Citrus at lemonade", zh: "柑橘·柠檬水" } },
+    { id: "cr", l: { en: "Creamy and coconut", ja: "クリーミー・ココナッツ", ko: "크리미·코코넛", tl: "Creamy at niyog", zh: "奶香·椰子" } },
+    { id: "ca", l: { en: "Candy and cereal", ja: "キャンディ・シリアル", ko: "캔디·시리얼", tl: "Candy at cereal", zh: "糖果·麦片" } },
+    { id: "mi", l: { en: "Mint", ja: "ミント", ko: "민트", tl: "Mint", zh: "薄荷" } }
+  ];
+
+  /* name, fruit tags, description per language */
+  var F = [
+    { n: "Aunty Mary", t: ["st", "bl"], d: { en: "Raspberry, cherry, strawberry", ja: "ラズベリー、チェリー、いちご", ko: "라즈베리, 체리, 딸기", tl: "Raspberry, cherry, strawberry", zh: "覆盆子、樱桃、草莓" } },
+    { n: "Basta", t: ["st", "me", "or"], d: { en: "Strawberry, honeydew, green apple", ja: "いちご、ハネデューメロン、青りんご", ko: "딸기, 허니듀 멜론, 청사과", tl: "Strawberry, honeydew, berdeng mansanas", zh: "草莓、蜜瓜、青苹果" } },
+    { n: "Biha", t: ["me", "bl"], d: { en: "Watermelon, mixed berries", ja: "スイカ、ミックスベリー", ko: "수박, 믹스베리", tl: "Pakwan, halo-halong berries", zh: "西瓜、混合莓果" } },
+    { n: "Blue Raspberry", t: ["bl"], d: { en: "Blue raspberry", ja: "ブルーラズベリー", ko: "블루 라즈베리", tl: "Blue raspberry", zh: "蓝覆盆子" } },
+    { n: "Bomy Guava", t: ["tr"], d: { en: "Guava", ja: "グアバ", ko: "구아바", tl: "Bayabas", zh: "番石榴" } },
+    { n: "Chagi Fan", t: ["me", "cr"], d: { en: "Honeydew and cantaloupe, or Melona ice cream", ja: "ハネデューメロンとカンタロープ、またはメロナ(メロン味のアイスバー)", ko: "허니듀와 칸탈루프 멜론, 또는 메로나 아이스크림", tl: "Honeydew at cantaloupe, o Melona ice cream", zh: "蜜瓜和哈密瓜,或 Melona 冰淇淋味" } },
+    { n: "Chamorrita", t: ["ca"], d: { en: "Hawaiian Punch (fruit punch)", ja: "ハワイアンパンチ(フルーツポンチ風味)", ko: "하와이안 펀치(과일 펀치)", tl: "Hawaiian Punch (fruit punch)", zh: "Hawaiian Punch 水果潘趣味" } },
+    { n: "Dalai", t: ["me", "tr"], d: { en: "Cantaloupe and mango", ja: "カンタロープとマンゴー", ko: "칸탈루프 멜론과 망고", tl: "Cantaloupe at mangga", zh: "哈密瓜和芒果" } },
+    { n: "Dudus", t: ["or"], d: { en: "Honey peach", ja: "ハニーピーチ(はちみつ桃)", ko: "허니 피치(꿀복숭아)", tl: "Honey peach", zh: "蜜桃" } },
+    { n: "Ekgo", t: ["tr"], d: { en: "Passion fruit and mango", ja: "パッションフルーツとマンゴー", ko: "패션프루트와 망고", tl: "Passion fruit at mangga", zh: "百香果和芒果" } },
+    { n: "Esta Shoots", t: ["bl", "me"], d: { en: "Blueberry ice keke with extra honeydew", ja: "ブルーベリーのアイスケケ、ハネデューメロン増し", ko: "블루베리 아이스 케케, 허니듀 멜론 추가", tl: "Blueberry ice keke na may extra honeydew", zh: "蓝莓 ice keke,加量蜜瓜" } },
+    { n: "Fakkai", t: ["me", "gr", "ca"], d: { en: "Watermelon, bubblegum, grape", ja: "スイカ、バブルガム、ぶどう", ko: "수박, 풍선껌, 포도", tl: "Pakwan, bubble gum, ubas", zh: "西瓜、泡泡糖、葡萄" } },
+    { n: "Fressa Niyok", t: ["st", "me", "cr"], d: { en: "Strawberry, honeydew, coconut", ja: "いちご、ハネデューメロン、ココナッツ", ko: "딸기, 허니듀 멜론, 코코넛", tl: "Strawberry, honeydew, niyog", zh: "草莓、蜜瓜、椰子" } },
+    { n: "Fruity Pebbles", t: ["ca"], d: { en: "Fruity Pebbles cereal", ja: "フルーティペブルズ(フルーツ味のシリアル)", ko: "후루티 페블스 시리얼(과일 맛 시리얼)", tl: "Fruity Pebbles cereal", zh: "Fruity Pebbles 水果麦片" } },
+    { n: "Guiya", t: ["tr"], d: { en: "Four Seasons juice with extra pineapple and mango", ja: "フォーシーズンズジュース、パイナップルとマンゴー増し", ko: "포시즌스 주스, 파인애플과 망고 추가", tl: "Four Seasons juice na may extra pinya at mangga", zh: "Four Seasons 果汁,加量菠萝和芒果" } },
+    { n: "Hagat Mango", t: ["tr"], d: { en: "Mango", ja: "マンゴー", ko: "망고", tl: "Mangga", zh: "芒果" } },
+    { n: "Holy Mac", t: ["st", "me", "tr"], d: { en: "Strawberry watermelon with a mango aftertaste", ja: "いちごスイカ、後味にマンゴー", ko: "딸기 수박, 끝맛은 망고", tl: "Strawberry at pakwan, may aftertaste na mangga", zh: "草莓西瓜,回味是芒果" } },
+    { n: "Karahu", t: ["ci", "cr"], d: { en: "Orange creamsicle", ja: "オレンジクリームシクル(オレンジとバニラのアイス風味)", ko: "오렌지 크림시클(오렌지와 바닐라 아이스)", tl: "Orange creamsicle (orange na may vanilla cream)", zh: "橙子奶油冰棒味(橙子配香草冰淇淋)" } },
+    { n: "Kuxika", t: ["bl", "st"], d: { en: "Like Aunty Mary, but with more blue raspberry", ja: "Aunty Mary に似ていて、ブルーラズベリーが強め", ko: "Aunty Mary와 비슷하지만 블루 라즈베리가 더 강함", tl: "Parang Aunty Mary, pero mas malakas ang blue raspberry", zh: "类似 Aunty Mary,但蓝覆盆子味更浓" } },
+    { n: "Leche", t: ["st"], d: { en: "Strawberry banana", ja: "いちごバナナ", ko: "딸기 바나나", tl: "Strawberry banana", zh: "草莓香蕉" } },
+    { n: "Lemonchina", t: ["ci", "cr"], d: { en: "Lemon creamsicle", ja: "レモンクリームシクル(レモンとバニラのアイス風味)", ko: "레몬 크림시클(레몬과 바닐라 아이스)", tl: "Lemon creamsicle (lemon na may vanilla cream)", zh: "柠檬奶油冰棒味(柠檬配香草冰淇淋)" } },
+    { n: "Magas", t: ["tr", "ca"], d: { en: "Pineapple gummy bear", ja: "パイナップル味のグミベア", ko: "파인애플 곰젤리", tl: "Pineapple gummy bear", zh: "菠萝小熊软糖" } },
+    { n: "Ma'goddai", t: ["tr", "cr"], d: { en: "Piña colada, stronger on the pineapple", ja: "ピニャコラーダ、パイナップル強め", ko: "피냐콜라다, 파인애플이 더 강함", tl: "Piña colada, mas malakas ang pinya", zh: "椰林飘香(Piña colada)风味,菠萝味更浓" } },
+    { n: "Mansana", t: ["or"], d: { en: "Apple, peach, pear", ja: "りんご、桃、洋梨", ko: "사과, 복숭아, 배", tl: "Mansanas, peach, peras", zh: "苹果、桃子、梨" } },
+    { n: "Mata'pang", t: ["or", "ca"], d: { en: "White peach gummy", ja: "白桃グミ", ko: "백도 젤리", tl: "White peach gummy", zh: "白桃软糖" } },
+    { n: "Miami Mint", t: ["mi"], d: { en: "Pure, slightly sweet mint, like typical mint gum", ja: "ほんのり甘いピュアなミント。よくあるミントガムのような味", ko: "은은하게 달콤한 순수 민트. 흔한 민트 껌 같은 맛", tl: "Purong mint na bahagyang matamis, parang karaniwang mint gum", zh: "纯正微甜的薄荷味,像常见的薄荷口香糖" } },
+    { n: "Mungi", t: ["or", "me"], d: { en: "Green apple and honeydew", ja: "青りんごとハネデューメロン", ko: "청사과와 허니듀 멜론", tl: "Berdeng mansanas at honeydew", zh: "青苹果和蜜瓜" } },
+    { n: "Niyok", t: ["cr", "ca"], d: { en: "Coconut candy that turns into Cinnamon Toast Crunch cereal milk", ja: "ココナッツキャンディから、シナモントーストクランチのシリアルミルクへ変化", ko: "코코넛 캔디에서 시나몬 토스트 크런치 시리얼 우유로 이어짐", tl: "Coconut candy na nagiging gatas ng Cinnamon Toast Crunch cereal", zh: "先是椰子糖,再转为 Cinnamon Toast Crunch 麦片牛奶味" } },
+    { n: "Pineapple Mango Lemonade", t: ["tr", "ci"], d: { en: "Pineapple and mango lemonade", ja: "パイナップルとマンゴーのレモネード", ko: "파인애플 망고 레모네이드", tl: "Pinya at mangga na lemonade", zh: "菠萝芒果柠檬水" } },
+    { n: "Saki Malana", t: ["or"], d: { en: "Apple C2 drink", ja: "C2 アップルドリンク", ko: "C2 사과 음료", tl: "C2 apple drink", zh: "C2 苹果饮料" } },
+    { n: "Strawberry", t: ["st"], d: { en: "Strawberry", ja: "いちご", ko: "딸기", tl: "Strawberry", zh: "草莓" } },
+    { n: "Strawberry Grape", t: ["st", "gr"], d: { en: "Strawberry and grape", ja: "いちごとぶどう", ko: "딸기와 포도", tl: "Strawberry at ubas", zh: "草莓和葡萄" } },
+    { n: "Strawberry Honeydew", t: ["st", "me"], d: { en: "Strawberry and honeydew", ja: "いちごとハネデューメロン", ko: "딸기와 허니듀 멜론", tl: "Strawberry at honeydew", zh: "草莓和蜜瓜" } },
+    { n: "Strawberry Yacult", t: ["st", "cr"], d: { en: "Strawberry with Yakult", ja: "いちご味のヤクルト", ko: "딸기 야쿠르트", tl: "Strawberry na may Yakult", zh: "草莓养乐多" } },
+    { n: "Taro Ice Cream", t: ["cr"], d: { en: "Taro ice cream", ja: "タロイモのアイスクリーム", ko: "타로 아이스크림", tl: "Ice cream na gabi (taro)", zh: "芋头冰淇淋" } },
+    { n: "Tisu", t: ["ci"], d: { en: "Pink lemonade", ja: "ピンクレモネード", ko: "핑크 레모네이드", tl: "Pink lemonade", zh: "粉红柠檬水" } },
+    { n: "Ubas", t: ["gr", "ca"], d: { en: "Grape Hi-Chew", ja: "ぶどう味のハイチュウ", ko: "포도맛 하이츄", tl: "Grape Hi-Chew", zh: "葡萄味 Hi-Chew 软糖" } },
+    { n: "Watermelon Ice", t: ["me"], d: { en: "Watermelon", ja: "スイカ", ko: "수박", tl: "Pakwan", zh: "西瓜" } },
+    { n: "Watermelon Lychee", t: ["me", "tr"], d: { en: "Watermelon and lychee", ja: "スイカとライチ", ko: "수박과 리치", tl: "Pakwan at lychee", zh: "西瓜和荔枝" } }
+  ];
+  F.sort(function (a, b) { return a.n.localeCompare(b.n, "en", { sensitivity: "base", ignorePunctuation: true }); });
+  F.forEach(function (f, i) { f.i = i; });
+
+  var tagById = {};
+  TAGS.forEach(function (t) { tagById[t.id] = t; });
+
+  var state = { lang: "en", q: "", tag: "all" };
+  try { var saved = localStorage.getItem("flavor-lang"); if (saved && LA[saved]) state.lang = saved; } catch (e) {}
+  var open = {};
+
+  var $ = function (id) { return document.getElementById(id); };
+  var listEl = $("list"), chipsEl = $("chips"), qEl = $("q"), clearEl = $("clear"), emptyEl = $("empty");
+
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+  function dotStyle(id) { return "style=\"--dot:var(--c-" + id + ")\""; }
+
+  function buildLangs() {
+    $("langs").insertAdjacentHTML("beforeend", LANGS.map(function (l) {
+      return "<label class=\"seg\"><input type=\"radio\" name=\"lang\" value=\"" + l.id + "\"" +
+        (l.id === state.lang ? " checked" : "") + "><span lang=\"" + l.lang + "\">" + l.label + "</span></label>";
+    }).join(""));
+  }
+
+  function buildChips() {
+    var l = state.lang;
+    var html = "<button type=\"button\" class=\"chip\" data-tag=\"all\" aria-pressed=\"" + (state.tag === "all") + "\" lang=\"" + LA[l] + "\">" + esc(UI.all[l]) + "</button>";
+    html += TAGS.map(function (t) {
+      return "<button type=\"button\" class=\"chip\" data-tag=\"" + t.id + "\" aria-pressed=\"" + (state.tag === t.id) + "\" lang=\"" + LA[l] + "\"><span class=\"dot\" " + dotStyle(t.id) + " aria-hidden=\"true\"></span>" + esc(t.l[l]) + "</button>";
+    }).join("");
+    chipsEl.innerHTML = html;
+  }
+
+  function chrome() {
+    var l = state.lang, a = LA[l];
+    document.title = "Five-Language Flavor Guide";
+    $("title").textContent = UI.title[l]; $("title").setAttribute("lang", a);
+    $("hint").textContent = UI.hint[l]; $("hint").setAttribute("lang", a);
+    qEl.placeholder = UI.search[l]; qEl.setAttribute("lang", a);
+    $("search-label").textContent = UI.search[l];
+    clearEl.setAttribute("aria-label", UI.clear[l]);
+    $("empty-msg").textContent = UI.none[l]; $("empty-msg").setAttribute("lang", a);
+    $("empty-btn").textContent = UI.reset[l]; $("empty-btn").setAttribute("lang", a);
+    $("count").setAttribute("lang", a);
+    chipsEl.setAttribute("aria-label", UI.group[l]);
+    buildChips();
+  }
+
+  function matches(f) {
+    if (state.tag !== "all" && f.t.indexOf(state.tag) < 0) return false;
+    if (!state.q) return true;
+    return (f.n + " " + f.d.en + " " + f.d[state.lang]).toLowerCase().indexOf(state.q) >= 0;
+  }
+
+  function rowHtml(f, anim) {
+    var l = state.lang, isOpen = !!open[f.i], sw = anim ? " swap" : "";
+    var dots = f.t.map(function (id) { return "<span class=\"dot\" " + dotStyle(id) + "></span>"; }).join("");
+    var all = LANGS.map(function (x) {
+      return "<div><dt lang=\"" + x.lang + "\">" + x.label + "</dt><dd lang=\"" + x.lang + "\">" + esc(f.d[x.id]) + "</dd></div>";
+    }).join("");
+    var tags = f.t.map(function (id) {
+      return "<span lang=\"" + LA[l] + "\"><span class=\"dot\" " + dotStyle(id) + " aria-hidden=\"true\"></span>" + esc(tagById[id].l[l]) + "</span>";
+    }).join("");
+    return "<li class=\"flavor" + (isOpen ? " is-open" : "") + "\" data-i=\"" + f.i + "\">" +
+      "<button type=\"button\" class=\"row\" aria-expanded=\"" + isOpen + "\" aria-controls=\"p" + f.i + "\">" +
+        "<span class=\"dots\" aria-hidden=\"true\">" + dots + "</span>" +
+        "<span class=\"txt\"><span class=\"name\" lang=\"en\">" + esc(f.n) + "</span>" +
+          "<span class=\"desc" + sw + "\" lang=\"" + LA[l] + "\">" + esc(f.d[l]) + "</span>" +
+          (l !== "en" ? "<span class=\"alt" + sw + "\" lang=\"en\">" + esc(f.d.en) + "</span>" : "") +
+        "</span>" +
+        "<svg class=\"chev\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M6 9l6 6 6-6\"/></svg>" +
+      "</button>" +
+      "<div class=\"panel\" id=\"p" + f.i + "\"" + (isOpen ? "" : " hidden") + "><dl>" + all + "</dl><p class=\"tags\">" + tags + "</p></div>" +
+    "</li>";
+  }
+
+  function render(anim) {
+    var shown = F.filter(matches);
+    listEl.innerHTML = shown.map(function (f) { return rowHtml(f, anim); }).join("");
+    listEl.hidden = shown.length === 0;
+    emptyEl.hidden = shown.length !== 0;
+    $("count").textContent = UI.count(state.lang, shown.length, F.length);
+    clearEl.hidden = !state.q;
+  }
+
+  function setLang(id, anim) {
+    state.lang = id;
+    try { localStorage.setItem("flavor-lang", id); } catch (e) {}
+    chrome();
+    render(anim);
+  }
+
+  function resetFilters() {
+    state.q = ""; state.tag = "all"; qEl.value = "";
+    buildChips(); render(false);
+  }
+
+  /* events */
+  $("langs").addEventListener("change", function (e) {
+    if (e.target && e.target.name === "lang") setLang(e.target.value, true);
+  });
+  chipsEl.addEventListener("click", function (e) {
+    var b = e.target.closest(".chip"); if (!b) return;
+    state.tag = b.getAttribute("data-tag");
+    var chips = chipsEl.querySelectorAll(".chip");
+    for (var i = 0; i < chips.length; i++) chips[i].setAttribute("aria-pressed", chips[i] === b ? "true" : "false");
+    render(false);
+  });
+  qEl.addEventListener("input", function () {
+    state.q = qEl.value.trim().toLowerCase();
+    render(false);
+  });
+  qEl.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && qEl.value) { qEl.value = ""; state.q = ""; render(false); }
+  });
+  clearEl.addEventListener("click", function () { qEl.value = ""; state.q = ""; render(false); qEl.focus(); });
+  $("empty-btn").addEventListener("click", resetFilters);
+  listEl.addEventListener("click", function (e) {
+    var b = e.target.closest(".row"); if (!b) return;
+    var li = b.parentNode, i = li.getAttribute("data-i"), panel = li.querySelector(".panel");
+    var now = !open[i];
+    if (now) open[i] = true; else delete open[i];
+    li.classList.toggle("is-open", now);
+    b.setAttribute("aria-expanded", now ? "true" : "false");
+    panel.hidden = !now;
+  });
+
+  buildLangs();
+  chrome();
+  render(false);
+})();
+</script>
+</body>
+</html>
